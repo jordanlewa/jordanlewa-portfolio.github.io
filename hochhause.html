@@ -387,6 +387,39 @@
                 height: 50vh;
             }
         }
+
+        /* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed) var(--transition-function);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 900;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
     </style>
 </head>
 <body>
@@ -527,6 +560,28 @@
     <!-- JavaScript for Lightbox and Animation -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Back to top button functionality
+const backToTopButton = document.getElementById('backToTop');
+
+// Only set up event listeners if the element exists
+if (backToTopButton) {
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    });
+
+    // Scroll to top when clicked
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
             const lightbox = document.getElementById('lightbox');
             const lightboxClose = document.getElementById('lightbox-close');
             const lightboxImg = document.getElementById('lightbox-img');
@@ -610,6 +665,12 @@
                 });
             });
         });
+        
     </script>
+    <div class="back-to-top" id="backToTop">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12L12 5l7 7"/>
+        </svg>
+      </div>
 </body>
 </html>

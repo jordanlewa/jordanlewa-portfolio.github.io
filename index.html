@@ -123,15 +123,46 @@
             width: 100%;
         }
         
-        /* Header */
-        header {
-            padding: calc(var(--spacing-unit) * 2) 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--accent-color);
-            animation: fadeIn 0.8s var(--transition-function);
-        }
+/* Header */
+header {
+    padding: calc(var(--spacing-unit) * 2) 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--accent-color);
+    animation: fadeIn 0.8s var(--transition-function);
+    position: fixed; /* Change from sticky to fixed */
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: white;
+    z-index: 1000;
+    transition: padding var(--transition-speed) var(--transition-function),
+                box-shadow var(--transition-speed) var(--transition-function);
+}
+
+/* Add padding to ensure content flows under the fixed header */
+body {
+    padding-top: calc(var(--spacing-unit) * 5); /* Adjust based on your header height */
+}
+
+/* Header inner container to match your site's max-width */
+.header-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--spacing-unit);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Add class for smaller header when scrolled */
+header.scrolled {
+    padding: calc(var(--spacing-unit)) 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
         
         .logo {
             font-size: 1.2rem;
@@ -616,8 +647,9 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
+<!-- Header -->
+<header>
+    <div class="header-container">
         <div class="logo">Jordan Lewa</div>
         <nav>
             <ul>
@@ -626,7 +658,8 @@
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
-    </header>
+    </div>
+</header>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -909,6 +942,17 @@ if (footer) {
     footer.style.animationPlayState = 'running';
   }, 1500);
 }
+
+// Make the header sticky
+window.addEventListener('scroll', () => {
+    const header = document.querySelector('header');
+    if (window.scrollY > 100) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+});
     </script>
+    
 </body>
 </html>

@@ -396,8 +396,13 @@ header.scrolled {
             position: relative;
             margin-top: calc(var(--spacing-unit) * 2);
             overflow: hidden;
+            cursor: grab;
         }
         
+        .carousel-container:active {
+    cursor: grabbing; /* Add this line */
+}
+
         .carousel {
             display: flex;
             transition: transform var(--transition-speed) var(--transition-function);
@@ -576,6 +581,39 @@ header.scrolled {
             font-size: 0.9rem;
         }
         
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed) var(--transition-function);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 900;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
         /* Responsive Design */
         @media (max-width: 992px) {
             .main-projects-grid {
@@ -834,125 +872,264 @@ header.scrolled {
 
     <!-- JavaScript for Carousel and Animations -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Carousel functionality
-            const carousel = document.getElementById('project-carousel');
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const items = document.querySelectorAll('.carousel-item');
-            
-            // Set initial values
-            let position = 0;
-            const itemWidth = items[0].getBoundingClientRect().width + 
-                              parseFloat(getComputedStyle(items[0]).marginRight);
-            
-            // The number of items visible depends on the screen width
-            const getVisibleItems = () => {
-                const width = window.innerWidth;
-                if (width < 768) return 1;
-                if (width < 992) return 2;
-                return 3;
-            };
-            
-            // Update carousel position with smooth transition
-            const updateCarousel = () => {
-                carousel.style.transform = `translateX(${-position * itemWidth}px)`;
-            };
-            
-            // Next button click handler
-            nextBtn.addEventListener('click', () => {
-                const maxPosition = items.length - getVisibleItems();
-                position = position >= maxPosition ? 0 : position + 1;
-                updateCarousel();
-            });
-            
-            // Previous button click handler
-            prevBtn.addEventListener('click', () => {
-                const maxPosition = items.length - getVisibleItems();
-                position = position <= 0 ? maxPosition : position - 1;
-                updateCarousel();
-            });
-            
-            // Update on window resize
-            window.addEventListener('resize', updateCarousel);
-            
-            // Scroll-based animations
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1
-            };
-            
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Start animations when element is visible
-                        const animElements = entry.target.querySelectorAll('.project, h2, .carousel-item, .carousel-controls');
-                        animElements.forEach((el, index) => {
-                            setTimeout(() => {
-                                el.style.animationPlayState = 'running';
-                            }, 100 * index); // Stagger the animations
-                        });
-                        
-                        // For sections that are animated as a whole
-                        if (entry.target.classList.contains('about-text') || 
-                            entry.target.classList.contains('about-image') ||
-                            entry.target.classList.contains('contact') ||
-                            entry.target.classList.contains('footer')) {
-                            entry.target.style.animationPlayState = 'running';
-                        }
-                        
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe sections for animation
-            document.querySelectorAll('.main-projects, .minor-projects, .about-text, .about-image, .contact, footer').forEach(section => {
-                observer.observe(section);
-            });
-            
-            // Smooth scroll for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    const targetElement = document.querySelector(targetId);
-                    
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-        });
+  // Fixed version - Replace your entire JavaScript section with this:
+document.addEventListener('DOMContentLoaded', function() {
+    // Draggable carousel functionality
+const carousel = document.getElementById('project-carousel');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const items = document.querySelectorAll('.carousel-item');
 
-        // Make sure the footer is being observed properly
-const footer = document.querySelector('footer');
-if (footer) {
-  footer.style.opacity = '0';
-  observer.observe(footer);
-  
-  // Fallback to ensure footer appears even if intersection observer fails
-  setTimeout(() => {
-    footer.style.opacity = '1';
-    footer.style.animationPlayState = 'running';
-  }, 1500);
-}
-
-// Make the header sticky
-window.addEventListener('scroll', () => {
-    const header = document.querySelector('header');
-    if (window.scrollY > 100) {
-        header.classList.add('scrolled');
-    } else {
-        header.classList.remove('scrolled');
+if (carousel && items.length > 0) {
+    // Variables for drag functionality
+    let isDragging = false;
+    let startPosition = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let currentIndex = 0;
+    
+    // The width of each item including margin
+    const getItemWidth = () => {
+        return items[0].getBoundingClientRect().width + 
+               parseFloat(getComputedStyle(items[0]).marginRight);
+    };
+    
+    let itemWidth = getItemWidth();
+    
+    // The number of items visible depends on the screen width
+    const getVisibleItems = () => {
+        const width = window.innerWidth;
+        if (width < 768) return 1;
+        if (width < 992) return 2;
+        return 3;
+    };
+    
+    // Set the maximum index based on visible items
+    const getMaxIndex = () => Math.max(0, items.length - getVisibleItems());
+    
+    // Disable default behavior
+    items.forEach(item => {
+        item.addEventListener('dragstart', e => e.preventDefault());
+    });
+    
+    // Touch events
+    carousel.addEventListener('touchstart', touchStart);
+    carousel.addEventListener('touchmove', touchMove);
+    carousel.addEventListener('touchend', touchEnd);
+    
+    // Mouse events
+    carousel.addEventListener('mousedown', touchStart);
+    carousel.addEventListener('mousemove', touchMove);
+    carousel.addEventListener('mouseup', touchEnd);
+    carousel.addEventListener('mouseleave', touchEnd);
+    
+    function touchStart(event) {
+        // Get the X position of touch or mouse
+        const position = getPositionX(event);
+        
+        isDragging = true;
+        startPosition = position;
+        
+        // Add grabbing cursor and smooth transition removal
+        carousel.style.cursor = 'grabbing';
+        carousel.style.transition = 'none';
     }
+    
+    function touchMove(event) {
+        if (!isDragging) return;
+        
+        // Get current position
+        const currentPosition = getPositionX(event);
+        const diff = currentPosition - startPosition;
+        
+        // Calculate the new translate position
+        currentTranslate = prevTranslate + diff;
+        
+        // Set boundaries
+        const minTranslate = 0;
+        const maxTranslate = -(getMaxIndex() * itemWidth);
+        
+        // Apply resistance at boundaries
+        if (currentTranslate > minTranslate) {
+            currentTranslate = minTranslate + (currentTranslate - minTranslate) * 0.3;
+        } else if (currentTranslate < maxTranslate) {
+            currentTranslate = maxTranslate + (currentTranslate - maxTranslate) * 0.3;
+        }
+        
+        // Apply transform
+        setSliderPosition();
+    }
+    
+    function touchEnd() {
+        isDragging = false;
+        
+        // Add back smooth transitions
+        carousel.style.cursor = 'grab';
+        carousel.style.transition = `transform var(--transition-speed) var(--transition-function)`;
+        
+        // Determine which slide to snap to
+        const movedBy = currentTranslate - prevTranslate;
+        
+        // If moved enough to consider it a swipe
+        if (Math.abs(movedBy) > itemWidth / 3) {
+            if (movedBy < 0) {
+                // Swiped left
+                currentIndex = Math.min(currentIndex + 1, getMaxIndex());
+            } else {
+                // Swiped right
+                currentIndex = Math.max(currentIndex - 1, 0);
+            }
+        }
+        
+        // Snap to the current index
+        currentTranslate = -currentIndex * itemWidth;
+        carousel.style.transform = `translateX(${currentTranslate}px)`;
+        prevTranslate = currentTranslate;
+    }
+    
+    function getPositionX(event) {
+        return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+    }
+    
+    function setSliderPosition() {
+        carousel.style.transform = `translateX(${currentTranslate}px)`;
+    }
+    
+    // Button navigation
+    prevBtn.addEventListener('click', () => {
+        currentIndex = Math.max(currentIndex - 1, 0);
+        updateCarouselPosition();
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        currentIndex = Math.min(currentIndex + 1, getMaxIndex());
+        updateCarouselPosition();
+    });
+    
+    function updateCarouselPosition() {
+        carousel.style.transition = `transform var(--transition-speed) var(--transition-function)`;
+        currentTranslate = -currentIndex * itemWidth;
+        carousel.style.transform = `translateX(${currentTranslate}px)`;
+        prevTranslate = currentTranslate;
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        // Recalculate item width
+        itemWidth = getItemWidth();
+        
+        // Adjust current position for new item width
+        currentIndex = Math.min(currentIndex, getMaxIndex());
+        currentTranslate = -currentIndex * itemWidth;
+        prevTranslate = currentTranslate;
+        
+        // Apply without transition
+        carousel.style.transition = 'none';
+        carousel.style.transform = `translateX(${currentTranslate}px)`;
+        
+        // Re-enable transitions after a short delay
+        setTimeout(() => {
+            carousel.style.transition = `transform var(--transition-speed) var(--transition-function)`;
+        }, 50);
+    });
+}
+ // Back to top button functionality
+ const backToTopButton = document.getElementById('backToTop');
+    
+    // Scroll-based animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Start animations when element is visible
+                const animElements = entry.target.querySelectorAll('.project, h2, .carousel-item, .carousel-controls');
+                animElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.style.animationPlayState = 'running';
+                    }, 100 * index); // Stagger the animations
+                });
+                
+                // For sections that are animated as a whole
+                if (entry.target.classList.contains('about-text') || 
+                    entry.target.classList.contains('about-image') ||
+                    entry.target.classList.contains('contact') ||
+                    entry.target.classList.contains('footer')) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+                
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    // Observe sections for animation
+    document.querySelectorAll('.main-projects, .minor-projects, .about-text, .about-image, .contact, footer').forEach(section => {
+        observer.observe(section);
+    });
+    
+    // Make sure the footer is being observed properly
+    const footer = document.querySelector('footer');
+    if (footer) {
+        footer.style.opacity = '0';
+        
+        // Fallback to ensure footer appears even if intersection observer fails
+        setTimeout(() => {
+            footer.style.opacity = '1';
+            footer.style.animationPlayState = 'running';
+        }, 1500);
+    }
+    
+    // Make the header sticky
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 100) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+        
+        // Show/hide back to top button based on scroll position
+        if (window.scrollY > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    });
+    
+    // Scroll to top when clicked
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
 });
     </script>
-    
-</body>
+<div class="back-to-top" id="backToTop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5 12L12 5l7 7"/>
+    </svg>
+  </div></body>
 </html>

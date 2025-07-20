@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>J.L. Atelier | Architecture Portfolio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
     <style>
         /* Global Styles */
         :root {
@@ -21,7 +20,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
         }
         
         body {
@@ -202,21 +201,10 @@ header.scrolled {
         
         /* Hero Section */
         .hero {
-            width: 100vw;
-            height: 90vh;
-            max-width: none !important;       /* Override any inherited max-width */
-            /*padding: 0 !important;  /* Override any padding */
-            margin: 0 auto;
+            height: 80vh;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-image: url('images/hero-mainv1.jpg');
-            background-size: cover;
-            color: #f0f0f0;
-            position: relative;
-            margin-left: calc(-1 * (100vw - 100%) / 2);
-
-            padding: 2rem;
         }
         
         .hero-content {
@@ -286,8 +274,7 @@ header.scrolled {
         .btn {
             display: inline-block;
             padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
-            border: 1px solid #ffffff;       /* ← white border */
-            color: #ffffff;  
+            border: 1px solid var(--primary-color);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             font-size: 0.8rem;
@@ -312,7 +299,6 @@ header.scrolled {
         }
         
         .btn:hover {
-            border: 1px solid var(--primary-color);
             color: white;
         }
         
@@ -721,9 +707,9 @@ header.scrolled {
             <p>Architecture student focused on sustainable design, innovative spaces, and human-centered environments.</p>
             <a href="#projects" class="btn">View Projects</a>
         </div>
-         <!-- <div class="hero-portrait">
+        <div class="hero-portrait">
             <img src="images/funny-rat-pictures-vn0xk5xtf4trsbul.jpg" alt="Your Portrait">
-        </div>  -->
+        </div> 
     </section>
 
     <!-- Main Projects Section -->

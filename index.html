@@ -202,7 +202,7 @@ header.scrolled {
         
         /* Hero Section */
         .hero {
-            width: 100vw;
+            width: 99vw;
             height: 90vh;
             max-width: none !important;       /* Override any inherited max-width */
             /*padding: 0 !important;  /* Override any padding */
@@ -216,7 +216,7 @@ header.scrolled {
             position: relative;
             margin-left: calc(-1 * (100vw - 100%) / 2);
 
-            padding: 2rem;
+            padding: 2rem 2rem 2rem 4rem;
         }
         
         .hero-content {
@@ -649,6 +649,7 @@ header.scrolled {
             .hero-content {
                 max-width: 100%;
                 order: 2;
+                padding: 2rem;
             }
             
             .hero-portrait {
@@ -660,6 +661,11 @@ header.scrolled {
         }
         
         @media (max-width: 768px) {
+            .hero {
+              
+                padding: 2rem;
+
+            }
             .hero h1 {
                 font-size: 2rem;
             }
